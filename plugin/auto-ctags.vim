@@ -1,5 +1,5 @@
 function! s:ctags()
-  silent! execute '!ctags -R . 2>&1 /dev/null &'
+  silent! execute '!ctags -R 2>/dev/null &'
 endfunction
 
 augroup auto-ctags
