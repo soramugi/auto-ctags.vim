@@ -1,5 +1,5 @@
 language: ruby
 rvm:
   - 1.9.3
-install: exuberant-ctags
+install: ctags-exuberant
 script: rake ci
