@@ -25,10 +25,6 @@ Create tags
 
     :Ctags
 
-Delete tags
-
-    :CtagsDelete
-
 Create at a Writing the file, default `0`
 
     let g:auto_ctags = 1
@@ -43,11 +39,12 @@ Create the tags name, default `tags`
 
     let g:auto_ctags_tags_name = 'tags'
 
+Create the ctags args, default `--tag-relative --recurse --sort=yes`
+
+    let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
+
 ## Policy
 * Created in the current directory by default
 * Create the version control directory in the configuration
 * Can be extended settings in the filetype
 * so that it can be used a minimum without any knowledge of tags
-
-## ToDo
-* Set ctags option

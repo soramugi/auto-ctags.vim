@@ -23,50 +23,58 @@ if !exists("g:auto_ctags_tags_name")
   let g:auto_ctags_tags_name = 'tags'
 endif
 
-let s:ctags_cmd = 'ctags'
-let s:ctags_opt = '--tag-relative'
-let s:ctags_create = 0
-for s:directory in g:auto_ctags_directory_list
-  if isdirectory(s:directory)
-    let s:tags_name = s:directory.'/'.g:auto_ctags_tags_name
-    ""silent! execute 'set tags+='.s:tags_name
-    let s:ctags_opt = s:ctags_opt.' -f '.s:tags_name
-    let s:ctags_create = 1
-  endif
-  if s:ctags_create > 0
-    break
-  endif
-endfor
+if !exists("g:auto_ctags_tags_args")
+  let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
+endif
 
-function! s:ctags(opt, redraw)
+function! s:get_ctags_path()
+  let s:path = ''
 
-  if s:ctags_create > 0
-    silent! execute '!'.s:ctags_cmd.' '.s:ctags_opt.' '.a:opt.' 2>/dev/null &'
-  endif
+  for s:directory in g:auto_ctags_directory_list
+    if isdirectory(s:directory)
+      let s:path = s:directory.'/'.g:auto_ctags_tags_name
+      break
+    endif
+  endfor
 
-  if a:redraw > 0
-    redraw!
-  endif
+  return s:path
 endfunction
 
-function! s:ctags_delete()
-  silent! execute '!rm '.s:tags_name.' 2>/dev/null'
-  redraw!
+function! s:get_ctags_cmd()
+  let s:ctags_cmd = ''
+
+  let s:tags_name = s:get_ctags_path()
+  if len(s:tags_name) > 0
+    let s:ctags_cmd = 'ctags '.g:auto_ctags_tags_args.' -f '.s:tags_name
+  endif
+
+  return s:ctags_cmd
+endfunction
+
+function! s:ctags(recreate)
+  if a:recreate > 0
+    silent! execute '!rm '.s:get_ctags_path().' 2>/dev/null'
+  endif
+
+  let s:cmd = s:get_ctags_cmd()
+  if len(s:cmd) > 0
+    silent! execute '!'.s:cmd.' 2>/dev/null &'
+  endif
+
+  if a:recreate > 0
+    redraw!
+  endif
 endfunction
 
 if g:auto_ctags > 0
   augroup auto_ctags
     autocmd!
-    autocmd BufReadPre * call <SID>ctags('', 0)
+    autocmd BufReadPre * call <SID>ctags(0)
   augroup END
 endif
 
 if !exists(":Ctags")
-  command -nargs=0 Ctags call <SID>ctags('', 1)
-endif
-
-if !exists(":CtagsDelete")
-  command -nargs=0 CtagsDelete call <SID>ctags_delete()
+  command -nargs=0 Ctags call <SID>ctags(1)
 endif
 
 let &cpo = s:save_cpo
