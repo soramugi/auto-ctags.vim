@@ -3,6 +3,7 @@ runtime! plugin/*.vim
 describe 'create tags'
   before
     new
+    set tags=tags
   end
 
   after
