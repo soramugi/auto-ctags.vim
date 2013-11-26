@@ -27,7 +27,7 @@ let s:ctags_cmd = 'ctags'
 let s:ctags_opt = '--tag-relative'
 let s:ctags_create = 0
 for s:directory in g:auto_ctags_directory_list
-  if isdirectory(s:directory)
+  if isdirectory(s:directory) || s:directory == '.'
     let s:tags_name = s:directory.'/'.g:auto_ctags_tags_name
     ""silent! execute 'set tags+='.s:filename
     let s:ctags_opt = s:ctags_opt.' -f '.s:tags_name

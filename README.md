@@ -25,9 +25,23 @@ Create tags
 
     :Ctags
 
-Create at a Writing the file
+Delete tags
+
+    :CtagsDelete
+
+Create at a Writing the file, default `0`
 
     let g:auto_ctags = 1
+
+Create the tags in directory, default `.`
+
+And stored in a directory that matches the first
+
+    let g:auto_ctags_directory_list = ['.git', '.svn']
+
+Create the tags name, default `tags`
+
+    let g:auto_ctags_tags_name = 'tags'
 
 ## Policy
 * Created in the current directory by default
@@ -36,5 +50,4 @@ Create at a Writing the file
 * so that it can be used a minimum without any knowledge of tags
 
 ## ToDo
-* Installation directory of version control
 * Set ctags option
