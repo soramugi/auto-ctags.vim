@@ -6,7 +6,7 @@ describe 'create tags'
   end
 
   after
-    !rm tags
+    ""!rm tags
     close!
   end
 
