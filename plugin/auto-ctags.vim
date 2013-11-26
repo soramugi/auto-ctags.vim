@@ -57,7 +57,7 @@ endfunction
 if g:auto_ctags > 0
   augroup auto_ctags
     autocmd!
-    autocmd BufWritePost * call <SID>ctags('-a', 0)
+    autocmd BufReadPre * call <SID>ctags('', 0)
   augroup END
 endif
 
