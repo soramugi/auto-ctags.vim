@@ -12,7 +12,7 @@ describe 'create tags'
 
   it ':Ctags'
     Ctags
-    Expect glob('tags') == 'tags'
+    Expect tagfiles() == ['tags']
   end
 end
 
