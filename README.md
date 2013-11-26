@@ -2,6 +2,8 @@
 
 run the ctags command
 
+[![Build Status](https://travis-ci.org/soramugi/auto-ctags.vim.png?branch=master)](https://travis-ci.org/soramugi/auto-ctags.vim)
+
 ## Usage
 
 Use [neobundle](https://github.com/Shougo/neobundle.vim) to install the plugin.
