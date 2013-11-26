@@ -6,13 +6,13 @@ describe 'create tags'
   end
 
   after
-    ""!rm tags
+    !rm tags
     close!
   end
 
   it ':Ctags'
     Ctags
-    Expect filereadable('tags') == 1
+    Expect glob('tags') == 'tags'
   end
 end
 

@@ -3,8 +3,6 @@ rvm:
   - 1.9.3
 before_install:
   - sudo apt-get install exuberant-ctags
-  - sudo apt-get install tree
 script:
   - ctags --version
   - rake ci
-  - tree
