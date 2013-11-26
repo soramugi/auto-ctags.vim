@@ -1,4 +1,3 @@
-filetype plugin on
 runtime! plugin/*.vim
 
 describe 'init default'
