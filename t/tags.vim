@@ -3,7 +3,6 @@ runtime! plugin/*.vim
 describe 'create tags'
   before
     new
-    set tags=tags
   end
 
   after
@@ -13,7 +12,7 @@ describe 'create tags'
 
   it ':Ctags'
     Ctags
-    Expect tagfiles() == ['tags']
+    Expect system('ls tags') == "tags\n"
   end
 end
 
