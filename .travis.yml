@@ -1,6 +1,8 @@
 language: ruby
 rvm:
   - 1.9.3
+before_install:
+  - sudo apt-get install exuberant-ctags
 script:
-  - ctags --help
+  - ctags --version
   - rake ci
