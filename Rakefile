@@ -1,11 +1,5 @@
-#!/usr/bin/env rake
+require 'rspec/core/rake_task'
 
-task :ci => [:dump, :test]
+RSpec::Core::RakeTask.new(:spec)
 
-task :dump do
-  sh 'vim --version'
-end
-
-task :test do
-  sh 'bundle exec vim-flavor test'
-end
+task :default => :spec
