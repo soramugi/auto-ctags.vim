@@ -43,6 +43,10 @@ Create the ctags args, default `--tag-relative --recurse --sort=yes`
 
     let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
 
+Create the filetype tags `--languages=` option mode, default `0`
+
+    let g:auto_ctags_filetype_mode = 1
+
 ## Policy
 * Created in the current directory by default
 * Create the version control directory in the configuration
