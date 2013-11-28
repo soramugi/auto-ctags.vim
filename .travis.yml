@@ -1,9 +1,8 @@
-language: viml
+language: ruby
+rvm:
+  - 1.9.3
 before_install:
   - sudo apt-get install exuberant-ctags
-  - git clone https://github.com/kana/vim-vspec.git
 script:
-  - vim --version
   - ctags --version
-  - cd t/
-  - ../vim-vspec/bin/vspec ../vim-vspec *
+  - rake ci
