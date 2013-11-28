@@ -40,11 +40,19 @@ function! s:get_ctags_path()
   return s:path
 endfunction
 
+function! s:get_ctags_lock_path()
+  let s:path = s:get_ctags_path()
+  if len(s:path) > 0
+    let s:path = s:path.'.lock'
+  endif
+  return s:path
+endfunction
+
 function! s:get_ctags_cmd()
   let s:ctags_cmd = ''
 
   let s:tags_name = s:get_ctags_path()
-  let s:tags_lock_name = s:tags_name.'.lock'
+  let s:tags_lock_name = s:get_ctags_lock_path()
   if len(s:tags_name) > 0 && glob(s:tags_lock_name) == ''
     let s:ctags_cmd = 'touch '.s:tags_lock_name.' && '
           \.'ctags '.g:auto_ctags_tags_args.' -f '.s:tags_name.' && '
@@ -57,7 +65,7 @@ endfunction
 function! s:ctags(recreate)
   if a:recreate > 0
     silent! execute '!rm '.s:get_ctags_path().' 2>/dev/null'
-    silent! execute '!rm '.s:get_ctags_path().'.lock 2>/dev/null'
+    silent! execute '!rm '.s:get_ctags_lock_path().' 2>/dev/null'
   endif
 
   let s:cmd = s:get_ctags_cmd()
