@@ -1,7 +1,9 @@
 language: ruby
 rvm:
   - 1.9.3
-before_install: sudo apt-get install vim-gtk
+before_install:
+  - sudo apt-get install vim-gtk
+  - sudo apt-get install exuberant-ctags
 before_script:
   - ctags --version
   - "export DISPLAY=:99.0"
