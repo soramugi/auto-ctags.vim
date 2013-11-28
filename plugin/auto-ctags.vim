@@ -44,8 +44,11 @@ function! s:get_ctags_cmd()
   let s:ctags_cmd = ''
 
   let s:tags_name = s:get_ctags_path()
-  if len(s:tags_name) > 0
-    let s:ctags_cmd = 'ctags '.g:auto_ctags_tags_args.' -f '.s:tags_name
+  let s:tags_lock_name = s:tags_name.'.lock'
+  if len(s:tags_name) > 0 && glob(s:tags_lock_name) == ''
+    let s:ctags_cmd = 'touch '.s:tags_lock_name.' && '
+          \.'ctags '.g:auto_ctags_tags_args.' -f '.s:tags_name.' && '
+          \.'rm '.s:tags_lock_name
   endif
 
   return s:ctags_cmd
@@ -54,11 +57,12 @@ endfunction
 function! s:ctags(recreate)
   if a:recreate > 0
     silent! execute '!rm '.s:get_ctags_path().' 2>/dev/null'
+    silent! execute '!rm '.s:get_ctags_path().'.lock 2>/dev/null'
   endif
 
   let s:cmd = s:get_ctags_cmd()
   if len(s:cmd) > 0
-    silent! execute '!'.s:cmd.' 2>/dev/null &'
+    silent! execute '!sh -c "'.s:cmd.'" 2>/dev/null &'
   endif
 
   if a:recreate > 0
@@ -69,7 +73,7 @@ endfunction
 if g:auto_ctags > 0
   augroup auto_ctags
     autocmd!
-    autocmd BufReadPre * call <SID>ctags(0)
+    autocmd BufWritePost * call <SID>ctags(0)
   augroup END
 endif
 
