@@ -27,12 +27,21 @@ if !exists("g:auto_ctags_tags_args")
   let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
 endif
 
+if !exists("g:auto_ctags_filetype_mode")
+  let g:auto_ctags_filetype_mode = 0
+endif
+
 function! s:get_ctags_path()
   let s:path = ''
-
   for s:directory in g:auto_ctags_directory_list
     if isdirectory(s:directory)
-      let s:path = s:directory.'/'.g:auto_ctags_tags_name
+      let s:tags_name = g:auto_ctags_tags_name
+      if g:auto_ctags_filetype_mode > 0
+        if &filetype !=# ''
+          let s:tags_name = &filetype.'.'.s:tags_name
+        endif
+      endif
+      let s:path = s:directory.'/'.s:tags_name
       break
     endif
   endfor
@@ -48,14 +57,24 @@ function! s:get_ctags_lock_path()
   return s:path
 endfunction
 
+function! s:get_ctags_cmd_opt()
+  let s:opt = g:auto_ctags_tags_args
+  if g:auto_ctags_filetype_mode > 0
+      if &filetype !=# ''
+        let s:opt = s:opt.' --languages='.&filetype
+      endif
+  endif
+  return s:opt
+endfunction
+
 function! s:get_ctags_cmd()
   let s:ctags_cmd = ''
 
-  let s:tags_name = s:get_ctags_path()
+  let s:tags_path = s:get_ctags_path()
   let s:tags_lock_name = s:get_ctags_lock_path()
-  if len(s:tags_name) > 0 && glob(s:tags_lock_name) == ''
+  if len(s:tags_path) > 0 && glob(s:tags_lock_name) == ''
     let s:ctags_cmd = 'touch '.s:tags_lock_name.' && '
-          \.'ctags '.g:auto_ctags_tags_args.' -f '.s:tags_name.' && '
+          \.'ctags '.s:get_ctags_cmd_opt().' -f '.s:tags_path.' && '
           \.'rm '.s:tags_lock_name
   endif
 
