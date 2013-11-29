@@ -1,22 +1,25 @@
-require 'tmpdir'
 require 'vimrunner'
+require 'vimrunner/rspec'
 
-RSpec.configure do |config|
-  config.around do |example|
-    Dir.mktmpdir do |dir|
-      Dir.chdir(dir) do
-        VIM.command("cd #{dir}")
-        example.call
-      end
-    end
-  end
+Vimrunner::RSpec.configure do |config|
 
-  config.before(:suite) do
-    VIM = Vimrunner.start
-    VIM.add_plugin(File.expand_path('../..', __FILE__), 'plugin/auto-ctags.vim')
-  end
+  # Use a single Vim instance for the test suite. Set to false to use an
+  # instance per test (slower, but can be easier to manage).
+  config.reuse_server = true
 
-  config.after(:suite) do
-    VIM.kill
+  # Decide how to start a Vim instance. In this block, an instance should be
+  # spawned and set up with anything project-specific.
+  config.start_vim do
+    vim = Vimrunner.start
+
+    # Or, start a GUI instance:
+    #vim = Vimrunner.start_gvim
+
+    # Setup your plugin in the Vim instance
+    plugin_path = File.expand_path('../..', __FILE__)
+    vim.add_plugin(plugin_path, 'plugin/auto-ctags.vim')
+
+    # The returned value is the Client available in the tests.
+    vim
   end
 end

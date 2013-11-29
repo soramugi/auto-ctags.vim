@@ -1,14 +1,7 @@
 language: ruby
-#rvm:
-#  - 1.9.3
-before_install:
-  - sudo apt-get install vim-gtk exuberant-ctags
-#  - git clone https://github.com/vim-jp/vim.git
-#  - cd vim
-#  - ./configure --prefix=$HOME/local --enable-multibyte --disable-selinux
-#  - make
-#  - sudo make install
-#  - cd ..
+rvm:
+  - 1.9.3
+before_install: sudo apt-get install vim-gtk exuberant-ctags
 before_script:
   - vim --version
   - ctags --version
