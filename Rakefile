@@ -1,11 +1,7 @@
-#!/usr/bin/env rake
+require 'rspec/core/rake_task'
 
-task :ci => [:dump, :test]
-
-task :dump do
-  sh 'vim --version'
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.pattern = 'spec/auto-ctags_spec.rb'
 end
 
-task :test do
-  sh 'bundle exec vim-flavor test'
-end
+task :default => :spec
