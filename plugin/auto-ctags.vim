@@ -82,6 +82,9 @@ function! s:get_ctags_cmd()
 endfunction
 
 function! s:ctags(recreate)
+  if g:auto_ctags ==# 0 && a:recreate ==# 0
+    finish
+  endif
   if a:recreate > 0
     silent! execute '!rm '.s:get_ctags_path().' 2>/dev/null'
     silent! execute '!rm '.s:get_ctags_lock_path().' 2>/dev/null'
@@ -97,12 +100,10 @@ function! s:ctags(recreate)
   endif
 endfunction
 
-if g:auto_ctags > 0
-  augroup auto_ctags
-    autocmd!
-    autocmd BufWritePost * call <SID>ctags(0)
-  augroup END
-endif
+augroup auto_ctags
+  autocmd!
+  autocmd BufWritePost * call <SID>ctags(0)
+augroup END
 
 if !exists(":Ctags")
   command -nargs=0 Ctags call <SID>ctags(1)
