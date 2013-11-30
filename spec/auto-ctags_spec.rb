@@ -60,15 +60,14 @@ describe "Auto Ctags" do
 
     vim.command 'Ctags'
     file_exist 'tags'
-
-    Dir.mkdir '.git'
-    vim.command 'Ctags'
-    file_exist '.git/tags'
   end
 
   specify "let g:auto_ctags_tags_name = 'huge.tags'" do
 
-    vim.command 'let g:auto_ctags_tags_name = "huge.tags"'
+    vimrc <<-EOF
+      let g:auto_ctags_tags_name = 'huge.tags'
+    EOF
+
     vim.command 'Ctags'
     file_exist 'huge.tags'
   end
