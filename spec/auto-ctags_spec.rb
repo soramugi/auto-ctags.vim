@@ -62,15 +62,15 @@ describe "Auto Ctags" do
     file_exist 'tags'
   end
 
-  specify "let g:auto_ctags_tags_name = 'huge.tags'" do
+  #specify "let g:auto_ctags_tags_name = 'huge.tags'" do
 
-    vimrc <<-EOF
-      let g:auto_ctags_tags_name = 'huge.tags'
-    EOF
+  #  vimrc <<-EOF
+  #    let g:auto_ctags_tags_name = 'huge.tags'
+  #  EOF
 
-    vim.command 'Ctags'
-    file_exist 'huge.tags'
-  end
+  #  vim.command 'Ctags'
+  #  file_exist 'huge.tags'
+  #end
 
   #specify "let g:auto_ctags_filetype_mode = 1" do
   #  vimrc <<-EOF
