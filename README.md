@@ -21,6 +21,16 @@ or
 
 ## Setting
 
+requires `ctags` utility. please install
+
+On Debian
+
+    sudo apt-get install exuberant-ctags
+
+On OSX
+
+    brew install ctags
+
 Create tags
 
     :Ctags
