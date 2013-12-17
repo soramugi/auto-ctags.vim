@@ -1,16 +1,19 @@
 " Vim global plugin for Create ctags
-" Last Change: 2013 Nov 26
+" Last Change: 2013 Dec 17
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
-if exists("g:loaded_auto_ctags")
+if exists("g:autoloaded_auto_ctags")
   finish
 endif
-let g:loaded_auto_ctags = 1
+let g:autoloaded_auto_ctags = 1
 
 let s:save_cpo = &cpo
 set cpo&vim
 
+"------------------------
+" setting
+"------------------------
 if !exists("g:auto_ctags")
   let g:auto_ctags = 0
 endif
@@ -31,7 +34,10 @@ if !exists("g:auto_ctags_filetype_mode")
   let g:auto_ctags_filetype_mode = 0
 endif
 
-function! s:get_ctags_path()
+"------------------------
+" function
+"------------------------
+function! auto_ctags#ctags_path()
   let s:path = ''
   for s:directory in g:auto_ctags_directory_list
     if isdirectory(s:directory)
@@ -49,15 +55,15 @@ function! s:get_ctags_path()
   return s:path
 endfunction
 
-function! s:get_ctags_lock_path()
-  let s:path = s:get_ctags_path()
+function! auto_ctags#ctags_lock_path()
+  let s:path = auto_ctags#ctags_path()
   if len(s:path) > 0
     let s:path = s:path.'.lock'
   endif
   return s:path
 endfunction
 
-function! s:get_ctags_cmd_opt()
+function! auto_ctags#ctags_cmd_opt()
   let s:opt = g:auto_ctags_tags_args
   if g:auto_ctags_filetype_mode > 0
       if &filetype !=# ''
@@ -67,30 +73,30 @@ function! s:get_ctags_cmd_opt()
   return s:opt
 endfunction
 
-function! s:get_ctags_cmd()
+function! auto_ctags#ctags_cmd()
   let s:ctags_cmd = ''
 
-  let s:tags_path = s:get_ctags_path()
-  let s:tags_lock_name = s:get_ctags_lock_path()
+  let s:tags_path = auto_ctags#ctags_path()
+  let s:tags_lock_name = auto_ctags#ctags_lock_path()
   if len(s:tags_path) > 0 && glob(s:tags_lock_name) == ''
     let s:ctags_cmd = 'touch '.s:tags_lock_name.' && '
-          \.'ctags '.s:get_ctags_cmd_opt().' -f '.s:tags_path.' && '
+          \.'ctags '.auto_ctags#ctags_cmd_opt().' -f '.s:tags_path.' && '
           \.'rm '.s:tags_lock_name
   endif
 
   return s:ctags_cmd
 endfunction
 
-function! s:ctags(recreate)
+function! auto_ctags#ctags(recreate)
   if g:auto_ctags ==# 0 && a:recreate ==# 0
     finish
   endif
   if a:recreate > 0
-    silent! execute '!rm '.s:get_ctags_path().' 2>/dev/null'
-    silent! execute '!rm '.s:get_ctags_lock_path().' 2>/dev/null'
+    silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
+    silent! execute '!rm '.auto_ctags#ctags_lock_path().' 2>/dev/null'
   endif
 
-  let s:cmd = s:get_ctags_cmd()
+  let s:cmd = auto_ctags#ctags_cmd()
   if len(s:cmd) > 0
     silent! execute '!sh -c "'.s:cmd.'" 2>/dev/null &'
   endif
@@ -99,15 +105,6 @@ function! s:ctags(recreate)
     redraw!
   endif
 endfunction
-
-augroup auto_ctags
-  autocmd!
-  autocmd BufWritePost * call <SID>ctags(0)
-augroup END
-
-if !exists(":Ctags")
-  command -nargs=0 Ctags call <SID>ctags(1)
-endif
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

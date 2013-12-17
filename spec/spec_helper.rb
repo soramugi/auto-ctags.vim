@@ -17,7 +17,8 @@ Vimrunner::RSpec.configure do |config|
 
     # Setup your plugin in the Vim instance
     plugin_path = File.expand_path('../..', __FILE__)
-    vim.add_plugin(plugin_path, 'plugin/auto-ctags.vim')
+    vim.add_plugin(plugin_path, 'autoload/auto_ctags.vim')
+    vim.add_plugin(plugin_path, 'plugin/auto_ctags.vim')
 
     # The returned value is the Client available in the tests.
     vim
