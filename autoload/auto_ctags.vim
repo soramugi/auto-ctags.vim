@@ -89,7 +89,7 @@ endfunction
 
 function! auto_ctags#ctags(recreate)
   if g:auto_ctags ==# 0 && a:recreate ==# 0
-    finish
+    return
   endif
   if a:recreate > 0
     silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
