@@ -26,6 +26,10 @@ if !exists("g:auto_ctags_tags_name")
   let g:auto_ctags_tags_name = 'tags'
 endif
 
+if !exists("g:auto_ctags_bin_path")
+  let g:auto_ctags_bin_path = 'ctags'
+endif
+
 if !exists("g:auto_ctags_tags_args")
   let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
 endif
@@ -75,12 +79,13 @@ endfunction
 
 function! auto_ctags#ctags_cmd()
   let s:ctags_cmd = ''
+  let s:tags_bin_path = g:auto_ctags_bin_path
 
   let s:tags_path = auto_ctags#ctags_path()
   let s:tags_lock_name = auto_ctags#ctags_lock_path()
   if len(s:tags_path) > 0 && glob(s:tags_lock_name) == ''
     let s:ctags_cmd = 'touch '.s:tags_lock_name.' && '
-          \.'ctags '.auto_ctags#ctags_cmd_opt().' -f '.s:tags_path.' && '
+          \.s:tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.s:tags_path.' && '
           \.'rm '.s:tags_lock_name
   endif
 
