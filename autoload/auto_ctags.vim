@@ -94,8 +94,8 @@ endfunction
 
 function! auto_ctags#ctags(recreate)
   if a:recreate ==# 0 && (g:auto_ctags ==# 0 ||
-              \ !filereadable(auto_ctags#ctags_path())) 
-      return
+        \ !filereadable(auto_ctags#ctags_path())) 
+    return
   endif
   if a:recreate > 0
     silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
