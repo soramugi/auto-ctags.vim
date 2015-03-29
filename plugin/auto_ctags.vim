@@ -13,7 +13,7 @@ set cpo&vim
 
 augroup auto_ctags
   autocmd!
-  autocmd BufWritePost * call auto_ctags#ctags(0)
+  autocmd BufWritePost * call auto_ctags#ctags_auto()
 augroup END
 
 command! Ctags call auto_ctags#ctags(1)

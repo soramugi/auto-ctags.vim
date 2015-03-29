@@ -35,10 +35,22 @@ describe "Auto Ctags" do
     file_exist 'tags'
   end
 
-  specify "tags not exists & let g:auto_ctags = 1" do
-
+  specify "let g:auto_ctags = 1 & let g:auto_ctags_create_without_a_care = 1" do
     vimrc <<-EOF
       let g:auto_ctags = 1
+      let g:auto_ctags_create_without_a_care = 1
+    EOF
+
+    vim.write
+
+    file_exist 'tags'
+  end
+
+  specify "let g:auto_ctags = 1 & let g:auto_ctags_create_without_a_care = 0 &
+  tag not exists" do
+    vimrc <<-EOF
+      let g:auto_ctags = 1
+      let g:auto_ctags_create_without_a_care = 0
     EOF
 
     vim.write
@@ -46,19 +58,23 @@ describe "Auto Ctags" do
     file_not_exist 'tags'
   end
 
-  specify "tags exists & let g:auto_ctags = 1" do
+  specify "let g:auto_ctags = 1 & let g:auto_ctags_create_without_a_care = 0 &
+  tag exists" do
     FileUtils.touch('tags')
-    a = File.ctime('tags')
+    a = File.mtime('tags')
+
+    sleep 0.5
 
     vimrc <<-EOF
       let g:auto_ctags = 1
+      let g:auto_ctags_create_without_a_care = 0
     EOF
 
     vim.write
 
     sleep 0.05
 
-    b = File.ctime('tags')
+    b = File.mtime('tags')
     expect(a).not_to eq(b)
     File.delete('tags')
   end
