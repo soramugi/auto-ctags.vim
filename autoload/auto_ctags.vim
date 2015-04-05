@@ -118,7 +118,9 @@ function! auto_ctags#ctags(recreate)
     silent! execute '!sh -c "'.s:cmd.'" 2>/dev/null &'
   endif
 
-  redraw!
+  if a:recreate > 0
+    redraw!
+  endif
 endfunction
 
 let &cpo = s:save_cpo
