@@ -63,7 +63,7 @@ describe "Auto Ctags" do
     FileUtils.touch('tags')
     a = File.mtime('tags')
 
-    sleep 0.5
+    sleep 1
 
     vimrc <<-EOF
       let g:auto_ctags = 1
