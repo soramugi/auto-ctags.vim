@@ -70,7 +70,9 @@ endfunction
 function! auto_ctags#ctags_cmd_opt()
   let s:opt = g:auto_ctags_tags_args
   if g:auto_ctags_filetype_mode > 0
-      if &filetype !=# ''
+      if &filetype ==# 'cpp'
+        let s:opt = s:opt.' --languages=c++'
+      elseif &filetype !=# ''
         let s:opt = s:opt.' --languages='.&filetype
       endif
   endif
