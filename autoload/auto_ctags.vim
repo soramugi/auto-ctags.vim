@@ -38,6 +38,10 @@ if !exists("g:auto_ctags_filetype_mode")
   let g:auto_ctags_filetype_mode = 0
 endif
 
+if !exists("g:auto_ctags_create_without_a_care")
+  let g:auto_ctags_create_without_a_care = 0
+endif
+
 "------------------------
 " function
 "------------------------
@@ -94,11 +98,19 @@ function! auto_ctags#ctags_cmd()
   return s:ctags_cmd
 endfunction
 
-function! auto_ctags#ctags(recreate)
-  if g:auto_ctags ==# 0 && a:recreate ==# 0
+function! auto_ctags#ctags_auto()
+  if g:auto_ctags == 0
     return
   endif
-  if a:recreate > 0
+  if (filereadable(auto_ctags#ctags_path()) ||
+        \ (!filereadable(auto_ctags#ctags_path()) &&
+        \ g:auto_ctags_create_without_a_care > 0))
+    call auto_ctags#ctags(0)
+  endif
+endfunction
+
+function! auto_ctags#ctags(recreate)
+  if a:recreate > 0 && filereadable(auto_ctags#ctags_path())
     silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
     silent! execute '!rm '.auto_ctags#ctags_lock_path().' 2>/dev/null'
   endif

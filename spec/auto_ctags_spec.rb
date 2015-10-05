@@ -1,9 +1,15 @@
 require 'spec_helper'
+require 'fileutils'
 
 def file_exist(file)
   sleep 0.05
-  File.exist?(file).should be_true
+  expect(File).to exist(file)
   File.delete(file)
+end
+
+def file_not_exist(file)
+  sleep 0.05
+  expect(File).not_to exist(file)
 end
 
 def set_file_content(file, string)
@@ -29,15 +35,48 @@ describe "Auto Ctags" do
     file_exist 'tags'
   end
 
-  specify "let g:auto_ctags = 1" do
-
+  specify "let g:auto_ctags = 1 & let g:auto_ctags_create_without_a_care = 1" do
     vimrc <<-EOF
       let g:auto_ctags = 1
+      let g:auto_ctags_create_without_a_care = 1
     EOF
 
     vim.write
 
     file_exist 'tags'
+  end
+
+  specify "let g:auto_ctags = 1 & let g:auto_ctags_create_without_a_care = 0 &
+  tag not exists" do
+    vimrc <<-EOF
+      let g:auto_ctags = 1
+      let g:auto_ctags_create_without_a_care = 0
+    EOF
+
+    vim.write
+
+    file_not_exist 'tags'
+  end
+
+  specify "let g:auto_ctags = 1 & let g:auto_ctags_create_without_a_care = 0 &
+  tag exists" do
+    FileUtils.touch('tags')
+    a = File.mtime('tags')
+
+    sleep 1
+
+    vimrc <<-EOF
+      let g:auto_ctags = 1
+      let g:auto_ctags_create_without_a_care = 0
+    EOF
+
+    vim.write
+
+    sleep 0.05
+
+    b = File.mtime('tags')
+    expect(a).not_to eq(b)
+    File.delete('tags')
   end
 
   specify "let g:auto_ctags_directory_list = ['.git']" do
