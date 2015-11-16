@@ -1,5 +1,5 @@
 " Vim global plugin for Create ctags
-" Last Change: 2013 Dec 17
+" Last Change: 11 Jul 2016
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
@@ -10,6 +10,8 @@ let g:autoloaded_auto_ctags = 1
 
 let s:save_cpo = &cpo
 set cpo&vim
+
+let s:is_windows = has('win32')
 
 "------------------------
 " setting
@@ -90,18 +92,28 @@ function! auto_ctags#ctags_cmd_opt()
 endfunction
 
 function! auto_ctags#ctags_cmd()
-  let ctags_cmd = ''
-  let tags_bin_path = g:auto_ctags_bin_path
-
   let tags_path = auto_ctags#ctags_path()
-  let tags_lock_name = auto_ctags#ctags_lock_path()
-  if len(tags_path) > 0 && glob(tags_lock_name) == ''
-    let ctags_cmd = 'touch '.tags_lock_name.' && '
-          \.tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' && '
-          \.'rm '.tags_lock_name
+  let tags_lock_path = auto_ctags#ctags_lock_path()
+  if tags_path == '' || glob(tags_lock_path) != ''
+    return ''
   endif
 
-  return ctags_cmd
+  let [ssl, &ssl] = [&ssl, 0]
+  let tags_path = shellescape(fnamemodify(tags_path, ":."))
+  let tags_lock_path = shellescape(fnamemodify(tags_lock_path, ":."))
+  let &ssl = ssl
+
+  if s:is_windows
+    let [touch_cmd, rm_cmd] = ['copy NUL', 'del']
+  else
+    let [touch_cmd, rm_cmd] = ['touch', 'rm -f']
+  endif
+
+  return join([
+  \ touch_cmd, tags_lock_path,
+  \ '&&', g:auto_ctags_bin_path, auto_ctags#ctags_cmd_opt(), '-f', tags_path,
+  \ '&&', rm_cmd, tags_lock_path,
+  \], ' ')
 endfunction
 
 function! auto_ctags#ctags(recreate)
@@ -109,16 +121,20 @@ function! auto_ctags#ctags(recreate)
     return
   endif
   if a:recreate > 0
-    silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
-    silent! execute '!rm '.auto_ctags#ctags_lock_path().' 2>/dev/null'
+    call map([auto_ctags#ctags_path(), auto_ctags#ctags_lock_path()], 'len(v:val) && delete(v:val)')
   endif
 
   let cmd = auto_ctags#ctags_cmd()
-  if len(cmd) > 0
-    silent! execute '!sh -c "'.cmd.'" 2>/dev/null &'
+  if cmd == ''
+    return
   endif
 
-  if a:recreate > 0
+  if s:is_windows
+    let [ssl, &ssl] = [&ssl, 0]
+    silent! execute '!start /b cmd.exe /c' shellescape(cmd, 1)
+    let &ssl = ssl
+  else
+    silent! execute '!sh -c' shellescape(cmd, 1) '&'
     redraw!
   endif
 endfunction
