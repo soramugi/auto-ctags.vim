@@ -131,12 +131,31 @@ function! auto_ctags#ctags(recreate)
 
   if s:is_windows
     let [ssl, &ssl] = [&ssl, 0]
-    silent! execute '!start /b cmd.exe /c' shellescape(cmd, 1)
+    let args = ['cmd.exe', '/c', cmd]
+    let cmd = 'start cmd.exe /c '.shellescape(cmd)
     let &ssl = ssl
   else
-    silent! execute '!sh -c' shellescape(cmd, 1) '&'
+    let args = ['sh', '-c', cmd]
+    let cmd = 'sh -c '.shellescape(cmd).' &'
+  endif
+
+  if s:has_vimproc()
+    call vimproc#system(args)
+  else
+    silent! execute '!' cmd
     redraw!
   endif
+endfunction
+
+function! s:has_vimproc()
+  if !exists('s:vimproc_exists')
+    try
+      let s:vimproc_exists = vimproc#dll_version() ? 1 : 0
+    catch
+      let s:vimproc_exists = 0
+    endtry
+  endif
+  return s:vimproc_exists
 endfunction
 
 let &cpo = s:save_cpo
