@@ -46,62 +46,62 @@ endif
 " function
 "------------------------
 function! auto_ctags#ctags_path()
-  let s:path = ''
-  for s:directory in g:auto_ctags_directory_list
+  let path = ''
+  for directory in g:auto_ctags_directory_list
     if g:auto_ctags_search_recursively > 0
-      let s:dirs = finddir(s:directory, escape(expand('<afile>:p:h'), ' ') . ';', -1)
-      if !empty(s:dirs)
-        let s:directory = s:dirs[0]
+      let dirs = finddir(directory, escape(expand('<afile>:p:h'), ' ') . ';', -1)
+      if !empty(dirs)
+        let directory = dirs[0]
       endif
     endif
-    if isdirectory(s:directory)
-      let s:tags_name = g:auto_ctags_tags_name
+    if isdirectory(directory)
+      let tags_name = g:auto_ctags_tags_name
       if g:auto_ctags_filetype_mode > 0
         if &filetype !=# ''
-          let s:tags_name = &filetype.'.'.s:tags_name
+          let tags_name = &filetype.'.'.tags_name
         endif
       endif
-      let s:path = s:directory.'/'.s:tags_name
+      let path = directory.'/'.tags_name
       break
     endif
   endfor
 
-  return s:path
+  return path
 endfunction
 
 function! auto_ctags#ctags_lock_path()
-  let s:path = auto_ctags#ctags_path()
-  if len(s:path) > 0
-    let s:path = s:path.'.lock'
+  let path = auto_ctags#ctags_path()
+  if len(path) > 0
+    let path = path.'.lock'
   endif
-  return s:path
+  return path
 endfunction
 
 function! auto_ctags#ctags_cmd_opt()
-  let s:opt = g:auto_ctags_tags_args
+  let opt = g:auto_ctags_tags_args
   if g:auto_ctags_filetype_mode > 0
       if &filetype ==# 'cpp'
-        let s:opt = s:opt.' --languages=c++'
+        let opt = opt.' --languages=c++'
       elseif &filetype !=# ''
-        let s:opt = s:opt.' --languages='.&filetype
+        let opt = opt.' --languages='.&filetype
       endif
   endif
-  return s:opt
+  return opt
 endfunction
 
 function! auto_ctags#ctags_cmd()
-  let s:ctags_cmd = ''
-  let s:tags_bin_path = g:auto_ctags_bin_path
+  let ctags_cmd = ''
+  let tags_bin_path = g:auto_ctags_bin_path
 
-  let s:tags_path = auto_ctags#ctags_path()
-  let s:tags_lock_name = auto_ctags#ctags_lock_path()
-  if len(s:tags_path) > 0 && glob(s:tags_lock_name) == ''
-    let s:ctags_cmd = 'touch '.s:tags_lock_name.' && '
-          \.s:tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.s:tags_path.' && '
-          \.'rm '.s:tags_lock_name
+  let tags_path = auto_ctags#ctags_path()
+  let tags_lock_name = auto_ctags#ctags_lock_path()
+  if len(tags_path) > 0 && glob(tags_lock_name) == ''
+    let ctags_cmd = 'touch '.tags_lock_name.' && '
+          \.tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' && '
+          \.'rm '.tags_lock_name
   endif
 
-  return s:ctags_cmd
+  return ctags_cmd
 endfunction
 
 function! auto_ctags#ctags(recreate)
@@ -113,9 +113,9 @@ function! auto_ctags#ctags(recreate)
     silent! execute '!rm '.auto_ctags#ctags_lock_path().' 2>/dev/null'
   endif
 
-  let s:cmd = auto_ctags#ctags_cmd()
-  if len(s:cmd) > 0
-    silent! execute '!sh -c "'.s:cmd.'" 2>/dev/null &'
+  let cmd = auto_ctags#ctags_cmd()
+  if len(cmd) > 0
+    silent! execute '!sh -c "'.cmd.'" 2>/dev/null &'
   endif
 
   if a:recreate > 0
