@@ -92,6 +92,9 @@ function! auto_ctags#ctags_cmd_opt()
 endfunction
 
 function! auto_ctags#ctags_cmd()
+  if !executable(g:auto_ctags_bin_path)
+    return ''
+  endif
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_path = auto_ctags#ctags_lock_path()
   if tags_path == '' || glob(tags_lock_path) != ''
