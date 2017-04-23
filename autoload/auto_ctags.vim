@@ -38,12 +38,22 @@ if !exists("g:auto_ctags_filetype_mode")
   let g:auto_ctags_filetype_mode = 0
 endif
 
+if !exists("g:auto_ctags_search_recursively")
+  let g:auto_ctags_search_recursively = 0
+endif
+
 "------------------------
 " function
 "------------------------
 function! auto_ctags#ctags_path()
   let s:path = ''
   for s:directory in g:auto_ctags_directory_list
+    if g:auto_ctags_search_recursively > 0
+      let s:dirs = finddir(s:directory, escape(expand('<afile>:p:h'), ' ') . ';', -1)
+      if !empty(s:dirs)
+        let s:directory = s:dirs[0]
+      endif
+    endif
     if isdirectory(s:directory)
       let s:tags_name = g:auto_ctags_tags_name
       if g:auto_ctags_filetype_mode > 0
