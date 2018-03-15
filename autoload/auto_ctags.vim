@@ -1,5 +1,5 @@
 " Vim global plugin for Create ctags
-" Last Change: 11 Jul 2016
+" Last Change: 15 Mar 2018
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
@@ -148,7 +148,9 @@ function! auto_ctags#ctags(recreate)
     let cmd = 'sh -c '.shellescape(cmd).' &'
   endif
 
-  if s:has_vimproc()
+  if has('job')
+    call job_start(args)
+  elseif s:has_vimproc()
     call vimproc#system(args)
   else
     silent! execute '!' cmd
