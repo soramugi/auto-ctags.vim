@@ -11,6 +11,8 @@ let g:autoloaded_auto_ctags = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:V = vital#of('autoctags')
+
 "------------------------
 " setting
 "------------------------
@@ -104,9 +106,7 @@ function! auto_ctags#ctags_cmd()
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_name = auto_ctags#ctags_lock_path()
   if len(tags_path) > 0 && glob(tags_lock_name) == ''
-    let ctags_cmd = 'touch '.tags_lock_name.' && '
-          \.tags_bin_path.' '.currentdir.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' && '
-          \.'rm '.tags_lock_name
+    let ctags_cmd = tags_bin_path.' '.currentdir.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path
   endif
 
   return ctags_cmd
@@ -116,15 +116,24 @@ function! auto_ctags#ctags(recreate)
   if g:auto_ctags ==# 0 && a:recreate ==# 0
     return
   endif
+
+  let s:file = s:V.import('System.File')
+  let s:promise = s:V:import('Async.Promise')
+  let s:process = s:V:import('System.Process')
+
   if a:recreate > 0
-    silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
-    silent! execute '!rm '.auto_ctags#ctags_lock_path().' 2>/dev/null'
+    s:file.rmdir(auto_ctags#ctags_path())
+    s:file.rmdir(auto_ctags#ctags_lock_path())
   endif
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
     echomsg 'exec cmd:'.cmd
-    silent! execute '!sh -c "'.cmd.'" 2>/dev/null &'
+    let s:command = s:promise.new({-> call writefile([],auto_ctags#ctags_lock_path())})
+          \.then({-> s:process.execute(cmd)})
+          \.then({-> s:file.rmdir(auto_ctags#ctags_lock_path())})
+    })
+    s:promise.resolve(s:command)
   endif
 
   if a:recreate > 0
