@@ -42,6 +42,10 @@ if !exists("g:auto_ctags_search_recursively")
   let g:auto_ctags_search_recursively = 0
 endif
 
+if !exists("g:auto_ctags_absolute_path")
+  let g:auto_ctags_absolute_path = 1
+endif
+
 "------------------------
 " function
 "------------------------
@@ -92,12 +96,16 @@ endfunction
 function! auto_ctags#ctags_cmd()
   let ctags_cmd = ''
   let tags_bin_path = g:auto_ctags_bin_path
+  let currentdir = '.'
+  if g:auto_ctags_absolute_path > 0
+    let currentdir = getcwd()
+  endif
 
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_name = auto_ctags#ctags_lock_path()
   if len(tags_path) > 0 && glob(tags_lock_name) == ''
     let ctags_cmd = 'touch '.tags_lock_name.' && '
-          \.tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' && '
+          \.tags_bin_path.' '.currentdir.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' && '
           \.'rm '.tags_lock_name
   endif
 
@@ -115,6 +123,7 @@ function! auto_ctags#ctags(recreate)
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
+    echomsg 'exec cmd:'.cmd
     silent! execute '!sh -c "'.cmd.'" 2>/dev/null &'
   endif
 
