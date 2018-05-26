@@ -104,7 +104,7 @@ function! auto_ctags#ctags_cmd()
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_name = auto_ctags#ctags_lock_path()
   if len(tags_path) > 0 && glob(tags_lock_name) == ''
-    let ctags_cmd = tags_bin_path.' '.currentdir.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path
+    let ctags_cmd = tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' '.currentdir
   endif
 
   return ctags_cmd
@@ -121,16 +121,22 @@ function! auto_ctags#ctags(recreate)
   let s:process = s:V.import('System.Process')
 
   if a:recreate > 0
-    s:file.rmdir(auto_ctags#ctags_path())
-    s:file.rmdir(auto_ctags#ctags_lock_path())
+    silent! s:file.rmdir(auto_ctags#ctags_path(),'f')
+    silent! s:file.rmdir(auto_ctags#ctags_lock_path(),'f')
   endif
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
-    let s:command = s:promise.new({-> call writefile([],auto_ctags#ctags_lock_path())})
-          \.then({-> s:process.execute(cmd)})
-          \.then({-> s:file.rmdir(auto_ctags#ctags_lock_path())})
-    s:promise.resolve(s:command)
+    call writefile([],auto_ctags#ctags_lock_path())
+    s:Promise.new({resolve, reject -> job_start(cmd, {
+              \   'close_cb' : {},
+              \   'exit_cb' : {ch, code ->
+              \     code ? reject() : resolve()
+              \   },
+              \ })
+              \}).finally({->
+              \ s:file.rmdir(auto_ctags#ctags_lock_path(),'f')
+              \})
   endif
 
   if a:recreate > 0
