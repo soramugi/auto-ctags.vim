@@ -11,8 +11,6 @@ let g:autoloaded_auto_ctags = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:V = vital#of('autoctags')
-
 "------------------------
 " setting
 "------------------------
@@ -117,9 +115,10 @@ function! auto_ctags#ctags(recreate)
     return
   endif
 
+  let s:V = vital#autoctags#new()
   let s:file = s:V.import('System.File')
-  let s:promise = s:V:import('Async.Promise')
-  let s:process = s:V:import('System.Process')
+  let s:promise = s:V.import('Async.Promise')
+  let s:process = s:V.import('System.Process')
 
   if a:recreate > 0
     s:file.rmdir(auto_ctags#ctags_path())
@@ -128,11 +127,9 @@ function! auto_ctags#ctags(recreate)
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
-    echomsg 'exec cmd:'.cmd
     let s:command = s:promise.new({-> call writefile([],auto_ctags#ctags_lock_path())})
           \.then({-> s:process.execute(cmd)})
           \.then({-> s:file.rmdir(auto_ctags#ctags_lock_path())})
-    })
     s:promise.resolve(s:command)
   endif
 
