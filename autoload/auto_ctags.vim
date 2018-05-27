@@ -141,11 +141,8 @@ function! auto_ctags#ctags(recreate)
             \})
     else
       call writefile([],auto_ctags#ctags_lock_path())
-      echomsg 'done write'
       call l:process.execute(cmd)
-      echomsg 'done exec'
       call delete(auto_ctags#ctags_lock_path())
-      echomsg 'done del'
     endif
   endif
 
