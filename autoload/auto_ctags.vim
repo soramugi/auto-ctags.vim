@@ -131,17 +131,17 @@ function! auto_ctags#ctags(recreate)
     " echomsg 'cmd : '.cmdctr
     if has('job') && has('lambda')
       call writefile([],auto_ctags#ctags_lock_path())
-      l:promise.new({resolve -> job_start(cmd, {
+      call l:promise.new({resolve -> job_start(cmd, {
             \   'exit_cb' : {->
             \     resolve()
             \   },
             \ })
             \}).finally({->
-            \  call delete(auto_ctags#ctags_lock_path())
+            \  delete(auto_ctags#ctags_lock_path())
             \})
     else
       call writefile([],auto_ctags#ctags_lock_path())
-      l:process.execute(cmd)
+      call l:process.execute(cmd)
       call delete(auto_ctags#ctags_lock_path())
     endif
   endif
