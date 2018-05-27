@@ -104,7 +104,7 @@ function! auto_ctags#ctags_cmd()
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_name = auto_ctags#ctags_lock_path()
   if len(tags_path) > 0 && glob(tags_lock_name) == ''
-    let ctags_cmd = tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' '.currentdir
+    let ctags_cmd = [tags_bin_path, auto_ctags#ctags_cmd_opt(), '-f ', tags_path, currentdir]
   endif
 
   return ctags_cmd
@@ -115,28 +115,34 @@ function! auto_ctags#ctags(recreate)
     return
   endif
 
-  let s:V = vital#autoctags#new()
-  let s:file = s:V.import('System.File')
-  let s:promise = s:V.import('Async.Promise')
-  let s:process = s:V.import('System.Process')
+  let l:V = vital#autoctags#new()
+  let l:file = l:V.import('System.File')
+  let l:promise = l:V.import('Async.Promise')
+  let l:process = l:V.import('System.Process')
 
   if a:recreate > 0
-    silent! s:file.rmdir(auto_ctags#ctags_path(),'f')
-    silent! s:file.rmdir(auto_ctags#ctags_lock_path(),'f')
+    call delete(auto_ctags#ctags_path())
+    call delete(auto_ctags#ctags_lock_path())
   endif
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
-    call writefile([],auto_ctags#ctags_lock_path())
-    s:Promise.new({resolve, reject -> job_start(cmd, {
-              \   'close_cb' : {},
-              \   'exit_cb' : {ch, code ->
-              \     code ? reject() : resolve()
-              \   },
-              \ })
-              \}).finally({->
-              \ s:file.rmdir(auto_ctags#ctags_lock_path(),'f')
-              \})
+    if has('job') && has('lambda')
+      let jobcmd = join(cmd,' ')
+      call writefile([],auto_ctags#ctags_lock_path())
+      l:Promise.new({resolve -> job_start(jobcmd, {
+            \   'exit_cb' : {->
+            \     resolve()
+            \   },
+            \ })
+            \}).finally({->
+            \  call delete(auto_ctags#ctags_lock_path())
+            \})
+    else
+      call writefile([],auto_ctags#ctags_lock_path())
+      l:process.execute(cmd)
+      call delete(auto_ctags#ctags_lock_path())
+    endif
   endif
 
   if a:recreate > 0
