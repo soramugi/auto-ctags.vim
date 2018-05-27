@@ -127,10 +127,11 @@ function! auto_ctags#ctags(recreate)
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
+    " let cmdstr = join(cmd,' ')
+    " echomsg 'cmd : '.cmdctr
     if has('job') && has('lambda')
-      let jobcmd = join(cmd,' ')
       call writefile([],auto_ctags#ctags_lock_path())
-      l:Promise.new({resolve -> job_start(jobcmd, {
+      l:promise.new({resolve -> job_start(cmd, {
             \   'exit_cb' : {->
             \     resolve()
             \   },
