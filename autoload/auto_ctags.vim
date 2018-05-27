@@ -84,17 +84,17 @@ endfunction
 function! auto_ctags#ctags_cmd_opt()
   let opt = g:auto_ctags_tags_args
   if g:auto_ctags_filetype_mode > 0
-      if &filetype ==# 'cpp'
-        let opt = opt.' --languages=c++'
-      elseif &filetype !=# ''
-        let opt = opt.' --languages='.&filetype
-      endif
+    if &filetype ==# 'cpp'
+      let opt = opt.' --languages=c++'
+    elseif &filetype !=# ''
+      let opt = opt.' --languages='.&filetype
+    endif
   endif
   return opt
 endfunction
 
 function! auto_ctags#ctags_cmd()
-  let ctags_cmd = ''
+  let ctags_cmd = []
   let tags_bin_path = g:auto_ctags_bin_path
   let currentdir = '.'
   if g:auto_ctags_absolute_path > 0
@@ -104,7 +104,7 @@ function! auto_ctags#ctags_cmd()
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_name = auto_ctags#ctags_lock_path()
   if len(tags_path) > 0 && glob(tags_lock_name) == ''
-    let ctags_cmd = [tags_bin_path, auto_ctags#ctags_cmd_opt(), '-f ', tags_path, currentdir]
+    let ctags_cmd = [tags_bin_path, auto_ctags#ctags_cmd_opt(), '-f '.tags_path, currentdir]
   endif
 
   return ctags_cmd
@@ -127,8 +127,8 @@ function! auto_ctags#ctags(recreate)
 
   let cmd = auto_ctags#ctags_cmd()
   if len(cmd) > 0
-    " let cmdstr = join(cmd,' ')
-    " echomsg 'cmd : '.cmdctr
+    " let job_cmd =  join(cmd,' ')
+    " echomsg 'cmd : ' . job_cmd
     if has('job') && has('lambda')
       call writefile([],auto_ctags#ctags_lock_path())
       call l:promise.new({resolve -> job_start(cmd, {
@@ -141,8 +141,11 @@ function! auto_ctags#ctags(recreate)
             \})
     else
       call writefile([],auto_ctags#ctags_lock_path())
+      echomsg 'done write'
       call l:process.execute(cmd)
+      echomsg 'done exec'
       call delete(auto_ctags#ctags_lock_path())
+      echomsg 'done del'
     endif
   endif
 
