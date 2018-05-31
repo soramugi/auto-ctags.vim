@@ -97,7 +97,7 @@ function! auto_ctags#ctags_cmd()
   let l:V = vital#autoctags#new()
   let l:path = l:V.import('System.Filepath')
 
-  let ctags_cmd = []
+  let ctags_cmd = ''
 
   let tags_bin_path = l:path.realpath(g:auto_ctags_bin_path)
   if !executable(tags_bin_path)
@@ -122,7 +122,7 @@ function! auto_ctags#ctags_cmd()
     return ctags_cmd
   endif
 
-  let ctags_cmd = [tags_bin_path, auto_ctags#ctags_cmd_opt(), '-f '.tags_path, currentdir]
+  let ctags_cmd = tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' '.currentdir
 
   return ctags_cmd
 endfunction
@@ -152,18 +152,21 @@ function! auto_ctags#ctags(recreate)
     call delete(tags_lock_path)
   endif
 
-  " let job_cmd =  join(cmd,' ')
-  " echomsg 'cmd : ' . job_cmd
   if has('job') && has('lambda')
     call writefile([], tags_lock_path)
     call l:promise.new({resolve -> job_start(cmd, {
-          \   'exit_cb' : {->
-          \     resolve()
-          \   },
+          \ 'exit_cb': { job, exit_status -> resolve(exit_status) },
           \ })
-          \}).finally({->
+          \})
+          \.catch({ exc -> execute('echomsg string(exc)', '') })
+          \.finally({->
           \  delete(tags_lock_path)
           \})
+
+          " debug
+          " 'out_cb': { job, msg -> execute('echomsg msg', '') },
+          " 'err_cb': { job, msg -> execute('echomsg msg', '') },
+          " then({ exit_status -> execute('echomsg "exit: " . exit_status', '') })
   else
     call writefile([], tags_lock_path)
     call l:process.execute(cmd)
