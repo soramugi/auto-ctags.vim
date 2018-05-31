@@ -1,5 +1,5 @@
 " Vim global plugin for Create ctags
-" Last Change: 2013 Dec 17
+" Last Change: 2018 Mar 29
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
@@ -31,7 +31,7 @@ if !exists("g:auto_ctags_bin_path")
 endif
 
 if !exists("g:auto_ctags_tags_args")
-  let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
+  let g:auto_ctags_tags_args = '--tag-relative=no --recurse=yes --sort=yes'
 endif
 
 if !exists("g:auto_ctags_filetype_mode")
@@ -40,6 +40,10 @@ endif
 
 if !exists("g:auto_ctags_search_recursively")
   let g:auto_ctags_search_recursively = 0
+endif
+
+if !exists("g:auto_ctags_absolute_path")
+  let g:auto_ctags_absolute_path = 1
 endif
 
 "------------------------
@@ -80,26 +84,45 @@ endfunction
 function! auto_ctags#ctags_cmd_opt()
   let opt = g:auto_ctags_tags_args
   if g:auto_ctags_filetype_mode > 0
-      if &filetype ==# 'cpp'
-        let opt = opt.' --languages=c++'
-      elseif &filetype !=# ''
-        let opt = opt.' --languages='.&filetype
-      endif
+    if &filetype ==# 'cpp'
+      let opt = opt.' --languages=c++'
+    elseif &filetype !=# ''
+      let opt = opt.' --languages='.&filetype
+    endif
   endif
   return opt
 endfunction
 
 function! auto_ctags#ctags_cmd()
-  let ctags_cmd = ''
-  let tags_bin_path = g:auto_ctags_bin_path
+  let l:V = vital#autoctags#new()
+  let l:path = l:V.import('System.Filepath')
 
-  let tags_path = auto_ctags#ctags_path()
-  let tags_lock_name = auto_ctags#ctags_lock_path()
-  if len(tags_path) > 0 && glob(tags_lock_name) == ''
-    let ctags_cmd = 'touch '.tags_lock_name.' && '
-          \.tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' && '
-          \.'rm '.tags_lock_name
+  let ctags_cmd = ''
+
+  let tags_bin_path = l:path.realpath(g:auto_ctags_bin_path)
+  if !executable(tags_bin_path)
+    call s:warn('Ctags command not found.')
+    return ctags_cmd
   endif
+
+  let currentdir = '.'
+  if g:auto_ctags_absolute_path > 0
+    let currentdir = getcwd()
+  endif
+
+  let tags_path = l:path.realpath(auto_ctags#ctags_path())
+  if tags_path == ''
+    call s:warn('Tags path not exists.')
+    return ctags_cmd
+  endif
+
+  let tags_lock_path = l:path.realpath(auto_ctags#ctags_lock_path())
+  if glob(tags_lock_path) != ''
+    call s:warn('Tags path currently locked.')
+    return ctags_cmd
+  endif
+
+  let ctags_cmd = tags_bin_path.' '.auto_ctags#ctags_cmd_opt().' -f '.tags_path.' '.currentdir
 
   return ctags_cmd
 endfunction
@@ -108,19 +131,57 @@ function! auto_ctags#ctags(recreate)
   if g:auto_ctags ==# 0 && a:recreate ==# 0
     return
   endif
-  if a:recreate > 0
-    silent! execute '!rm '.auto_ctags#ctags_path().' 2>/dev/null'
-    silent! execute '!rm '.auto_ctags#ctags_lock_path().' 2>/dev/null'
-  endif
 
   let cmd = auto_ctags#ctags_cmd()
-  if len(cmd) > 0
-    silent! execute '!sh -c "'.cmd.'" 2>/dev/null &'
+
+  if len(cmd) == 0
+    return
+  endif
+
+  let l:V = vital#autoctags#new()
+  let l:file = l:V.import('System.File')
+  let l:promise = l:V.import('Async.Promise')
+  let l:process = l:V.import('System.Process')
+  let l:path = l:V.import('System.Filepath')
+
+  let tags_path = l:path.realpath(auto_ctags#ctags_path())
+  let tags_lock_path = l:path.realpath(auto_ctags#ctags_lock_path())
+
+  if a:recreate > 0
+    call delete(tags_path)
+    call delete(tags_lock_path)
+  endif
+
+  if has('job') && has('lambda')
+    call writefile([], tags_lock_path)
+    call l:promise.new({resolve -> job_start(cmd, {
+          \ 'exit_cb': { job, exit_status -> resolve(exit_status) },
+          \ })
+          \})
+          \.catch({ exc -> execute('echomsg string(exc)', '') })
+          \.finally({->
+          \  delete(tags_lock_path)
+          \})
+
+          " debug
+          " 'out_cb': { job, msg -> execute('echomsg msg', '') },
+          " 'err_cb': { job, msg -> execute('echomsg msg', '') },
+          " then({ exit_status -> execute('echomsg "exit: " . exit_status', '') })
+  else
+    call writefile([], tags_lock_path)
+    call l:process.execute(cmd)
+    call delete(tags_lock_path)
   endif
 
   if a:recreate > 0
     redraw!
   endif
+endfunction
+
+function! s:warn(msg)
+  echohl WarningMsg
+  echo 'auto_ctags.vim:' a:msg
+  echohl None
 endfunction
 
 let &cpo = s:save_cpo
