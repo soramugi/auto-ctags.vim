@@ -1,0 +1,8 @@
+version: "2"
+services:
+  test:
+    build:
+      context: ./
+      dockerfile: ./spec/Dockerfile
+    volumes:
+      - ./:/vim-test
