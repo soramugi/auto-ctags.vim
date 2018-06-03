@@ -1,5 +1,5 @@
 " Vim global plugin for Create ctags
-" Last Change: 11 Jul 2016
+" Last Change: 15 Mar 2018
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
@@ -92,9 +92,18 @@ function! auto_ctags#ctags_cmd_opt()
 endfunction
 
 function! auto_ctags#ctags_cmd()
+  if !executable(g:auto_ctags_bin_path)
+    call s:warn('Ctags command not found.')
+    return ''
+  endif
   let tags_path = auto_ctags#ctags_path()
   let tags_lock_path = auto_ctags#ctags_lock_path()
-  if tags_path == '' || glob(tags_lock_path) != ''
+  if tags_path == ''
+    call s:warn('Tags path not exists.')
+    return ''
+  endif
+  if glob(tags_lock_path) != ''
+    call s:warn('Tags path currently locked.')
     return ''
   endif
 
@@ -131,12 +140,39 @@ function! auto_ctags#ctags(recreate)
 
   if s:is_windows
     let [ssl, &ssl] = [&ssl, 0]
-    silent! execute '!start /b cmd.exe /c' shellescape(cmd, 1)
+    let args = ['cmd.exe', '/c', cmd]
+    let cmd = 'start cmd.exe /c '.shellescape(cmd)
     let &ssl = ssl
   else
-    silent! execute '!sh -c' shellescape(cmd, 1) '&'
+    let args = ['sh', '-c', cmd]
+    let cmd = 'sh -c '.shellescape(cmd).' &'
+  endif
+
+  if has('job')
+    call job_start(args)
+  elseif s:has_vimproc()
+    call vimproc#system(args)
+  else
+    silent! execute '!' cmd
     redraw!
   endif
+endfunction
+
+function! s:has_vimproc()
+  if !exists('s:vimproc_exists')
+    try
+      let s:vimproc_exists = vimproc#dll_version() ? 1 : 0
+    catch
+      let s:vimproc_exists = 0
+    endtry
+  endif
+  return s:vimproc_exists
+endfunction
+
+function! s:warn(msg)
+  echohl WarningMsg
+  echo 'auto_ctags.vim:' a:msg
+  echohl None
 endfunction
 
 let &cpo = s:save_cpo
