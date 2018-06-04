@@ -1,5 +1,5 @@
 " Vim global plugin for Create ctags
-" Last Change: 2018 Jun 4
+" Last Change: 4 Jun 2018
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
