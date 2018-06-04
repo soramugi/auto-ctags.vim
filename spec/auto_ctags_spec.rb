@@ -2,6 +2,8 @@ require 'spec_helper'
 
 def file_exist(file)
   sleep 0.05
+  # p "Dir current"
+  # p Dir.glob("**/*")
   File.exist?(file).should be_true
   File.delete(file)
 end
