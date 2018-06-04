@@ -1,5 +1,5 @@
 " Vim global plugin for Create ctags
-" Last Change: 2018 Mar 29
+" Last Change: 2018 Jun 4
 " Maintainer: Yudai Tsuyuzaki <soramugi.chika@gmail.com>
 " License: This file is placed in the public domain.
 
@@ -89,9 +89,9 @@ function! auto_ctags#ctags_cmd_opt()
   let opt = g:auto_ctags_tags_args
   if g:auto_ctags_filetype_mode > 0
     if &filetype ==# 'cpp'
-      let opt = opt + ['--languages', 'c++']
+      let opt = opt + ['--languages=c++']
     elseif &filetype !=# ''
-      let opt = opt + ['--languages', &filetype]
+      let opt = opt + ['--languages='.&filetype]
     endif
   endif
   return opt
