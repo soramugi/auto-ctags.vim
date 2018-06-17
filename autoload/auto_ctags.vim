@@ -36,6 +36,8 @@ endif
 
 if !exists("g:auto_ctags_tags_args")
   let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes']
+elseif type(g:auto_ctags_tags_args) == type('')
+  let g:auto_ctags_tags_args = split(g:auto_ctags_tags_args, ' ')
 endif
 
 if !exists("g:auto_ctags_filetype_mode")

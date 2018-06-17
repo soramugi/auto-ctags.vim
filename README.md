@@ -51,7 +51,7 @@ Create the tags name, default `tags`
 
 Create the ctags args, default `--tag-relative --recurse --sort=yes`
 
-    let g:auto_ctags_tags_args = '--tag-relative --recurse --sort=yes'
+    let g:auto_ctags_tags_args = ['--tag-relative=yes', '--recurse=yes', '--sort=yes']
 
 Create the filetype tags `--languages=` option mode, default `0`
 

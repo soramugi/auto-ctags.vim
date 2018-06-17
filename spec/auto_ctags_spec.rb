@@ -64,6 +64,15 @@ describe "Auto Ctags" do
     file_exist 'tags'
   end
 
+  specify "g:auto_ctags_tags_args" do
+    vimrc <<-EOF
+      let g:auto_ctags_tags_args = ['--tag-relative', '--recurse', '--sort=yes']
+    EOF
+
+    vim.command 'Ctags'
+    file_exist 'tags'
+  end
+
   #specify "let g:auto_ctags_tags_name = 'huge.tags'" do
 
   #  vimrc <<-EOF
