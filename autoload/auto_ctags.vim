@@ -14,6 +14,8 @@ set cpo&vim
 let s:File = vital#autoctags#import('System.File')
 let s:Process = vital#autoctags#import('System.Process')
 let s:Path = vital#autoctags#import('System.Filepath')
+let s:Job = vital#autoctags#import('System.Job')
+let s:Promise = vital#autoctags#import('Async.Promise')
 
 "------------------------
 " setting
@@ -154,11 +156,12 @@ function! auto_ctags#ctags(recreate)
 
   " debug
   " echomsg 'cmd : ' . join(cmd, ' ')
-  if has('job') && has('lambda')
-    let l:Promise = vital#autoctags#import('Async.Promise')
+  if s:Job.is_available() && has('lambda')
     call writefile([], tags_lock_path)
-    call l:Promise.new({resolve -> job_start(cmd, {
-          \ 'exit_cb': { job, exit_status -> resolve(exit_status) },
+    call s:Promise.new({resolve -> s:Job.start(cmd, {
+            \ 'stdout': [''],
+            \ 'stderr': [''],
+            \ 'on_exit':{ exit_status -> resolve(exit_status) },
           \ })
           \})
           \.catch({ exc -> execute('echomsg string(exc)', '') })
