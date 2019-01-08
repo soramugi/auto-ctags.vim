@@ -145,7 +145,6 @@ function! auto_ctags#ctags(recreate)
     return
   endif
 
-
   let tags_path = s:Path.realpath(auto_ctags#ctags_path())
   let tags_lock_path = s:Path.realpath(auto_ctags#ctags_lock_path())
 
@@ -156,7 +155,7 @@ function! auto_ctags#ctags(recreate)
 
   " debug
   " echomsg 'cmd : ' . join(cmd, ' ')
-  if s:Job.is_available() && has('lambda')
+  if s:Promise.is_available() && s:Job.is_available()
     call writefile([], tags_lock_path)
     call s:Promise.new({resolve -> s:Job.start(cmd, {
             \ 'stdout': [''],
@@ -168,11 +167,6 @@ function! auto_ctags#ctags(recreate)
           \.finally({->
           \  delete(tags_lock_path)
           \})
-
-    " debug
-    " 'out_cb': { job, msg -> execute('echomsg msg', '') },
-    " 'err_cb': { job, msg -> execute('echomsg msg', '') },
-    " then({ exit_status -> execute('echomsg "exit: " . exit_status', '') })
   else
     call writefile([], tags_lock_path)
     call s:Process.execute(cmd)
