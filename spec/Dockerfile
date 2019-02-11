@@ -1,6 +1,9 @@
 FROM ruby:2.4
 
-RUN add-apt-repository ppa:jonathonf/vim -y && apt update && apt install vim-gtk3 && apt install exuberant-ctags && apt install xvfb
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:jonathonf/vim -y
+RUN apt install -y vim-gtk3 exuberant-ctags xvfb
 
 RUN mkdir /vim-test
 WORKDIR /vim-test
