@@ -1,9 +1,16 @@
 language: ruby
 rvm:
-  - 1.9.3
-before_install: sudo apt-get install vim-gtk exuberant-ctags
+  - 2.3.0
+dist: xenial
+before_install:
+  - sudo add-apt-repository ppa:jonathonf/vim -y
+  - sudo apt update
+  - sudo apt install vim-gtk3
+  - sudo apt install exuberant-ctags
 before_script:
+  - which vim
   - vim --version
   - ctags --version
+  - cat Gemfile.lock
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
