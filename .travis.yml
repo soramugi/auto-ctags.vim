@@ -2,6 +2,8 @@ language: ruby
 rvm:
   - 2.3.0
 dist: xenial
+services:
+  - xvfb
 before_install:
   - sudo add-apt-repository ppa:jonathonf/vim -y
   - sudo apt update
