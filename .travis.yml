@@ -5,11 +5,6 @@ dist: xenial
 services:
   - xvfb
   - docker
-before_install:
-  - sudo add-apt-repository ppa:jonathonf/vim -y
-  - sudo apt update
-  - sudo apt install vim-gtk3
-  - sudo apt install exuberant-ctags
 stages:
   - name: rake
     if: branch != docker
@@ -18,6 +13,11 @@ stages:
 jobs:
   include:
     - stage: rake
+      before_install:
+        - sudo add-apt-repository ppa:jonathonf/vim -y
+        - sudo apt update
+        - sudo apt install vim-gtk3
+        - sudo apt install exuberant-ctags
       script: bundle exec rake
     - stage: docker
       script: sh ./run-test.sh
