@@ -18,12 +18,11 @@ jobs:
         - sudo apt update
         - sudo apt install vim-gtk3
         - sudo apt install exuberant-ctags
+      before_script:
+        - which vim
+        - vim --version
+        - ctags --version
+        - cat Gemfile.lock
       script: bundle exec rake
     - stage: docker
       script: sh ./run-test.sh
-before_script:
-  - which vim
-  - vim --version
-  - ctags --version
-  - cat Gemfile.lock
-  - "export DISPLAY=:99.0"
