@@ -10,6 +10,11 @@ before_install:
   - sudo apt update
   - sudo apt install vim-gtk3
   - sudo apt install exuberant-ctags
+stages:
+  - name: rake
+    if: branch != docker
+  - name: docker
+    if: branch = docker
 jobs:
   include:
     - stage: rake
