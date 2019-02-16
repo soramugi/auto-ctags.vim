@@ -16,6 +16,7 @@ let s:Process = vital#autoctags#import('System.Process')
 let s:Path = vital#autoctags#import('System.Filepath')
 let s:Job = vital#autoctags#import('System.Job')
 let s:Promise = vital#autoctags#import('Async.Promise')
+let s:Set = vital#autoctags#import('Data.Set')
 
 "------------------------
 " setting
@@ -54,6 +55,9 @@ if !exists("g:auto_ctags_absolute_path")
   let g:auto_ctags_absolute_path = 0
 endif
 
+" lockfile set
+let s:lockfiles = s:Set.set()
+
 "------------------------
 " function
 "------------------------
@@ -78,7 +82,7 @@ function! auto_ctags#ctags_path()
     endif
   endfor
 
-  return path
+  return s:Path.abspath(s:Path.realpath(path))
 endfunction
 
 function! auto_ctags#ctags_lock_path()
@@ -86,7 +90,7 @@ function! auto_ctags#ctags_lock_path()
   if len(path) > 0
     let path = path.'.lock'
   endif
-  return path
+  return s:Path.abspath(s:Path.realpath(path))
 endfunction
 
 function! auto_ctags#ctags_cmd_opt()
@@ -115,13 +119,13 @@ function! auto_ctags#ctags_cmd()
     let currentdir = getcwd()
   endif
 
-  let tags_path = s:Path.realpath(auto_ctags#ctags_path())
+  let tags_path = auto_ctags#ctags_path()
   if tags_path == ''
     call s:warn('Tags path not exists.')
     return ctags_cmd
   endif
 
-  let tags_lock_path = s:Path.realpath(auto_ctags#ctags_lock_path())
+  let tags_lock_path = auto_ctags#ctags_lock_path()
   if glob(tags_lock_path) != ''
     call s:warn('Tags path currently locked.')
     return ctags_cmd
@@ -145,8 +149,8 @@ function! auto_ctags#ctags(recreate)
     return
   endif
 
-  let tags_path = s:Path.realpath(auto_ctags#ctags_path())
-  let tags_lock_path = s:Path.realpath(auto_ctags#ctags_lock_path())
+  let tags_path = auto_ctags#ctags_path()
+  let tags_lock_path = auto_ctags#ctags_lock_path()
 
   if a:recreate > 0
     call delete(tags_path)
@@ -156,7 +160,7 @@ function! auto_ctags#ctags(recreate)
   " debug
   " echomsg 'cmd : ' . join(cmd, ' ')
   if s:Promise.is_available() && s:Job.is_available()
-    call writefile([], tags_lock_path)
+    call s:lockfile_add_touch(tags_lock_path)
     call s:Promise.new({resolve -> s:Job.start(cmd, {
             \ 'stdout': [''],
             \ 'stderr': [''],
@@ -164,13 +168,11 @@ function! auto_ctags#ctags(recreate)
           \ })
           \})
           \.catch({ exc -> execute('echomsg string(exc)', '') })
-          \.finally({->
-          \  delete(tags_lock_path)
-          \})
+          \.finally(funcref("s:lockfile_del_remove", [tags_lock_path]))
   else
-    call writefile([], tags_lock_path)
+    call s:lockfile_add_touch(tags_lock_path)
     call s:Process.execute(cmd)
-    call delete(tags_lock_path)
+    call s:lockfile_del_remove(tags_lock_path)
   endif
 
   if a:recreate > 0
@@ -183,6 +185,35 @@ function! s:warn(msg)
   echo 'auto_ctags.vim:' a:msg
   echohl None
 endfunction
+
+
+" after care:lockfile delete at vim exit
+function! s:lockfile_del_atquit()
+  let filelist = s:lockfiles.to_list()
+  for file in filelist
+    if filereadable(file)
+      " echomsg 'vim exit remove lockfile:' . file
+      call s:lockfile_del_remove(file)
+    endif
+  endfor
+endfunction
+
+function! s:lockfile_add_touch(path)
+  " echomsg "prepare lockfile:" . a:path
+  call s:lockfiles.add(a:path)
+  call writefile([], a:path)
+endfunction
+
+function! s:lockfile_del_remove(path)
+  " echomsg "finally remove lockfile:" . a:path
+  call delete(a:path)
+  call s:lockfiles.remove(a:path)
+endfunction
+
+augroup autoctags_exit
+    autocmd!
+    autocmd VimLeave * call <SID>lockfile_del_atquit()
+augroup END
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
