@@ -133,8 +133,6 @@ function! auto_ctags#ctags_cmd()
 
   let ctags_cmd = [tags_bin_path] + auto_ctags#ctags_cmd_opt() + ['-f', tags_path, currentdir]
 
-  " debug
-  " echomsg 'ctags paths '.'tag_bin:'.tags_bin_path.',tag_path:'.tags_path.',lock_file:'.tags_lock_path.',cur_dir:'.currentdir
   return ctags_cmd
 endfunction
 
@@ -157,8 +155,6 @@ function! auto_ctags#ctags(recreate)
     call delete(tags_lock_path)
   endif
 
-  " debug
-  " echomsg 'cmd : ' . join(cmd, ' ')
   if s:Promise.is_available() && s:Job.is_available()
     call s:lockfile_add_touch(tags_lock_path)
     call s:Promise.new({resolve -> s:Job.start(cmd, {
@@ -192,20 +188,17 @@ function! s:lockfile_del_atquit()
   let filelist = s:lockfiles.to_list()
   for file in filelist
     if filereadable(file)
-      " echomsg 'vim exit remove lockfile:' . file
       call s:lockfile_del_remove(file)
     endif
   endfor
 endfunction
 
 function! s:lockfile_add_touch(path)
-  " echomsg "prepare lockfile:" . a:path
   call s:lockfiles.add(a:path)
   call writefile([], a:path)
 endfunction
 
 function! s:lockfile_del_remove(path)
-  " echomsg "finally remove lockfile:" . a:path
   call delete(a:path)
   call s:lockfiles.remove(a:path)
 endfunction
