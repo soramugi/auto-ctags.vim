@@ -116,7 +116,18 @@ function! auto_ctags#ctags_cmd()
 
   let currentdir = '.'
   if g:auto_ctags_absolute_path > 0
+    " Windows ctags command get currentdir for backslash path with slash aware
+    " shell (ex bash)
+    "  > c:/home> ctasg -f .git/tags 'c:\home'
+    " shellslash no affect in *nix
+    if exists('+shellslash')
+      let saved_shellslash = &shellslash
+      set noshellslash
+    endif
     let currentdir = getcwd()
+    if exists('+shellslash')
+      let &shellslash = saved_shellslash
+    endif
   endif
 
   let tags_path = auto_ctags#ctags_path()
