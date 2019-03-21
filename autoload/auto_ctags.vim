@@ -67,7 +67,7 @@ function! auto_ctags#ctags_path()
     if g:auto_ctags_search_recursively > 0
       let dirs = finddir(directory, escape(expand('<afile>:p:h'), ' ') . ';', -1)
       if !empty(dirs)
-        let directory = dirs[0]
+        let directory = fnamemodify(dirs[0], ':p')
       endif
     endif
     if isdirectory(directory)
@@ -77,20 +77,22 @@ function! auto_ctags#ctags_path()
           let tags_name = &filetype.'.'.tags_name
         endif
       endif
-      let path = directory.s:Path.separator().tags_name
+      let path = directory . s:Path.separator() . tags_name
       break
     endif
   endfor
 
-  return s:Path.abspath(s:Path.realpath(path))
+  return s:Path.realpath(path)
 endfunction
 
 function! auto_ctags#ctags_lock_path()
   let path = auto_ctags#ctags_path()
+
   if len(path) > 0
-    let path = path.'.lock'
+    let path = path . '.lock'
   endif
-  return s:Path.abspath(s:Path.realpath(path))
+
+  return s:Path.realpath(path)
 endfunction
 
 function! auto_ctags#ctags_cmd_opt()
