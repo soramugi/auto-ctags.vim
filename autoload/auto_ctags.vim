@@ -67,7 +67,7 @@ function! auto_ctags#ctags_path()
     if g:auto_ctags_search_recursively > 0
       let dirs = finddir(directory, escape(expand('<afile>:p:h'), ' ') . ';', -1)
       if !empty(dirs)
-        let directory = dirs[0]
+        let directory = fnamemodify(dirs[0], ':p')
       endif
     endif
     if isdirectory(directory)
@@ -77,20 +77,22 @@ function! auto_ctags#ctags_path()
           let tags_name = &filetype.'.'.tags_name
         endif
       endif
-      let path = directory.s:Path.separator().tags_name
+      let path = directory . s:Path.separator() . tags_name
       break
     endif
   endfor
 
-  return s:Path.abspath(s:Path.realpath(path))
+  return s:Path.realpath(path)
 endfunction
 
 function! auto_ctags#ctags_lock_path()
   let path = auto_ctags#ctags_path()
+
   if len(path) > 0
-    let path = path.'.lock'
+    let path = path . '.lock'
   endif
-  return s:Path.abspath(s:Path.realpath(path))
+
+  return s:Path.realpath(path)
 endfunction
 
 function! auto_ctags#ctags_cmd_opt()
@@ -116,7 +118,18 @@ function! auto_ctags#ctags_cmd()
 
   let currentdir = '.'
   if g:auto_ctags_absolute_path > 0
+    " Windows ctags command get currentdir for backslash path with slash aware
+    " shell (ex bash)
+    "  > c:/home> ctasg -f .git/tags 'c:\home'
+    " shellslash no affect in *nix
+    if exists('+shellslash')
+      let saved_shellslash = &shellslash
+      set noshellslash
+    endif
     let currentdir = getcwd()
+    if exists('+shellslash')
+      let &shellslash = saved_shellslash
+    endif
   endif
 
   let tags_path = auto_ctags#ctags_path()
@@ -133,8 +146,6 @@ function! auto_ctags#ctags_cmd()
 
   let ctags_cmd = [tags_bin_path] + auto_ctags#ctags_cmd_opt() + ['-f', tags_path, currentdir]
 
-  " debug
-  " echomsg 'ctags paths '.'tag_bin:'.tags_bin_path.',tag_path:'.tags_path.',lock_file:'.tags_lock_path.',cur_dir:'.currentdir
   return ctags_cmd
 endfunction
 
@@ -157,8 +168,6 @@ function! auto_ctags#ctags(recreate)
     call delete(tags_lock_path)
   endif
 
-  " debug
-  " echomsg 'cmd : ' . join(cmd, ' ')
   if s:Promise.is_available() && s:Job.is_available()
     call s:lockfile_add_touch(tags_lock_path)
     call s:Promise.new({resolve -> s:Job.start(cmd, {
@@ -192,20 +201,17 @@ function! s:lockfile_del_atquit()
   let filelist = s:lockfiles.to_list()
   for file in filelist
     if filereadable(file)
-      " echomsg 'vim exit remove lockfile:' . file
       call s:lockfile_del_remove(file)
     endif
   endfor
 endfunction
 
 function! s:lockfile_add_touch(path)
-  " echomsg "prepare lockfile:" . a:path
   call s:lockfiles.add(a:path)
   call writefile([], a:path)
 endfunction
 
 function! s:lockfile_del_remove(path)
-  " echomsg "finally remove lockfile:" . a:path
   call delete(a:path)
   call s:lockfiles.remove(a:path)
 endfunction
