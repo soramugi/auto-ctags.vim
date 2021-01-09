@@ -57,6 +57,10 @@ Create the filetype tags `--languages=` option mode, default `0`
 
     let g:auto_ctags_filetype_mode = 1
 
+Show all warning messages only once, default `0`
+
+    let g:auto_ctags_warn_once = 1
+
 ## Testing
 
 Please install `docker`
