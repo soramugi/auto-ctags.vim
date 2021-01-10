@@ -47,6 +47,10 @@ if !exists("g:auto_ctags_filetype_mode")
   let g:auto_ctags_filetype_mode = 0
 endif
 
+if !exists("g:auto_ctags_set_tags_option")
+  let g:auto_ctags_set_tags_option = 0
+endif
+
 if !exists("g:auto_ctags_search_recursively")
   let g:auto_ctags_search_recursively = 0
 endif
@@ -191,6 +195,13 @@ function! auto_ctags#ctags(recreate)
 
   if a:recreate > 0
     redraw!
+  endif
+endfunction
+
+function! auto_ctags#set_tags_option()
+  let tag_path = auto_ctags#ctags_path()
+  if tag_path != '' && stridx(&tags, tag_path) == -1
+      execute 'setlocal tags^='.tag_path
   endif
 endfunction
 
