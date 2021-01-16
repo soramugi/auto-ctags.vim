@@ -57,6 +57,18 @@ Create the filetype tags `--languages=` option mode, default `0`
 
     let g:auto_ctags_filetype_mode = 1
 
+Set a valid tags option by calling `:setlocal tags^=<tags file name>` per buffers
+
+    :CtagsSetTagsOption
+
+Call automatically `:CtagsSetTagsOption` when BufNewFile and BufRead are triggered, default `0`
+
+    let g:auto_ctags_set_tags_option = 1
+
+Show all warning messages only once, default `0`
+
+    let g:auto_ctags_warn_once = 1
+
 ## Testing
 
 Please install `docker`
