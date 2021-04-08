@@ -47,10 +47,6 @@ if !exists("g:auto_ctags_filetype_mode")
   let g:auto_ctags_filetype_mode = 0
 endif
 
-if !exists("g:auto_ctags_set_tags_option")
-  let g:auto_ctags_set_tags_option = 0
-endif
-
 if !exists("g:auto_ctags_search_recursively")
   let g:auto_ctags_search_recursively = 0
 endif
