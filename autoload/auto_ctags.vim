@@ -72,7 +72,7 @@ function! auto_ctags#ctags_path()
     if g:auto_ctags_search_recursively > 0
       let dirs = finddir(directory, escape(expand('<afile>:p:h'), ' ') . ';', -1)
       if !empty(dirs)
-        let directory = fnamemodify(dirs[0], ':p')
+        let directory = s:Path.remove_last_separator(fnamemodify(dirs[0], ':p'))
       endif
     endif
     if isdirectory(directory)
